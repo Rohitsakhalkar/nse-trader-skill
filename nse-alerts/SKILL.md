@@ -48,9 +48,13 @@ ignore the thing you installed to protect you. Time alerts check the exchange
 calendar and skip with a reason.
 
 A Muhurat session is the interesting case: the market is closed for the
-holiday but a special hour-long window trades anyway, so the square-off moves
-to fifteen minutes before *that* window's end rather than sitting two hours
-past it.
+holiday but a special window trades anyway, so the square-off has to land
+inside *that* window. In 2026 it ran 14:20 to 15:30 (NSE/CMTR/76941, 19
+October 2026), which ends at the ordinary close, so the usual 15:15 already
+sits fifteen minutes inside it and does not move. A window that ends early, or
+an evening one like Muhurat sessions of years past, puts 15:15 outside the
+session, and the square-off moves to fifteen minutes before that window's
+close.
 
 ## The honest limit on prices
 

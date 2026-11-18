@@ -21,11 +21,12 @@ charge on the sell. Costs are therefore not a percentage you can subtract from
 a return; they depend on direction, product and how many orders filled.
 
 RATES, read 2026-11-10 from the NSE charge schedule and a discount broker's
-published calculator. They move with exchange and government circulars, so
-treat them the way the holiday table is treated: dated, and refreshed on
-purpose. Every one is overridable from trader/config.json under "charges", and
-brokerage especially is yours, not a law. Verify against a real contract note
-before you trust a number to the rupee.
+published calculator, and re-checked 2026-11-14 against NSE/FA/73061. They move
+with exchange and government circulars, so treat them the way the holiday table
+is treated: dated, and refreshed on purpose. Every one is overridable from
+trader/config.json under "charges", and brokerage especially is yours, not a
+law. Verify against a real contract note before you trust a number to the
+rupee.
 """
 
 import json
@@ -53,30 +54,40 @@ def _d(x, what="a number"):
 
 # Percentages of turnover unless the name says otherwise. buy/sell keys mean the
 # charge applies to that leg only.
+#
+# txn and ipft are one bill in two lines, and NSE moved the line between them on
+# 1 March 2026 (NSE/FA/73061, 27 February 2026). The IPFT top-up of April 2023
+# was rolled back to its old level and the transaction charge absorbed it, "thereby
+# ensuring no impact in the overall outflow": cash went from 297 + 10 to 306.99 +
+# 0.01 rupees per crore, futures from 173 + 10 to 182.99 + 0.01, options from 3503
+# + 50 to 3552.99 + 0.01 per crore of premium. Each pair still totals what it did
+# (307, 183 and 3553 per crore), so a round trip costs the same to the paisa and
+# only the split on a contract note changed. Brokers quote the total as one number:
+# 0.00307%, 0.00183% and 0.03553%. Keep the two lines in step if either moves.
 RATES = {
     "equity_intraday": {
         "stt": {"sell": "0.025"},
-        "txn": {"buy": "0.00297", "sell": "0.00297"},      # NSE exchange transaction charge
+        "txn": {"buy": "0.0030699", "sell": "0.0030699"},  # NSE exchange transaction charge
         "sebi": {"buy": "0.0001", "sell": "0.0001"},       # 10 rupees per crore
-        "ipft": {"buy": "0.0001", "sell": "0.0001"},       # NSE investor protection fund
+        "ipft": {"buy": "0.0000001", "sell": "0.0000001"},  # NSE investor protection fund
         "stamp": {"buy": "0.003"},
         "gst_pct": "18",            # on brokerage + txn + sebi + ipft
         "dp_per_sell": "0",
     },
     "equity_delivery": {
         "stt": {"buy": "0.1", "sell": "0.1"},
-        "txn": {"buy": "0.00297", "sell": "0.00297"},
+        "txn": {"buy": "0.0030699", "sell": "0.0030699"},
         "sebi": {"buy": "0.0001", "sell": "0.0001"},
-        "ipft": {"buy": "0.0001", "sell": "0.0001"},
+        "ipft": {"buy": "0.0000001", "sell": "0.0000001"},
         "stamp": {"buy": "0.015"},
         "gst_pct": "18",
         "dp_per_sell": "15.34",     # flat per scrip per day on the sell, not a percentage
     },
     "futures": {
         "stt": {"sell": "0.02"},
-        "txn": {"buy": "0.00173", "sell": "0.00173"},
+        "txn": {"buy": "0.0018299", "sell": "0.0018299"},
         "sebi": {"buy": "0.0001", "sell": "0.0001"},
-        "ipft": {"buy": "0.0001", "sell": "0.0001"},
+        "ipft": {"buy": "0.0000001", "sell": "0.0000001"},
         "stamp": {"buy": "0.002"},
         "gst_pct": "18",
         "dp_per_sell": "0",
@@ -84,9 +95,9 @@ RATES = {
     "options": {
         # every rate here is on PREMIUM turnover, not contract value
         "stt": {"sell": "0.1"},
-        "txn": {"buy": "0.03503", "sell": "0.03503"},
+        "txn": {"buy": "0.0355299", "sell": "0.0355299"},
         "sebi": {"buy": "0.0001", "sell": "0.0001"},
-        "ipft": {"buy": "0.0005", "sell": "0.0005"},
+        "ipft": {"buy": "0.0000001", "sell": "0.0000001"},
         "stamp": {"buy": "0.003"},
         "gst_pct": "18",
         "dp_per_sell": "0",

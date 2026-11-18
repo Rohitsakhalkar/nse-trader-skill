@@ -29,9 +29,10 @@ backtests a day the market never traded. Refresh with:
     python3 tools/refresh_calendar.py
 
 A holiday can still carry a special session. Diwali Muhurat trading is about an
-hour on an evening the market is otherwise shut, and in 2026 it fell on a
-Sunday (2026-11-08). MUHURAT holds those, so is_trading_day() stays False while
-session() still returns the window.
+hour on a day the market is otherwise shut, and in 2026 it fell on a Sunday
+(2026-11-08). MUHURAT holds those, so is_trading_day() stays False while
+session() still returns the window. Each window comes from the exchange's own
+circular, cited beside it; do not carry a guess there.
 """
 
 import datetime
@@ -80,10 +81,17 @@ HOLIDAYS = {
 HOLIDAYS_THROUGH = "2026-12-31"
 
 # Special sessions on days the market is otherwise closed: {date: (start, end)}.
-# The exchange confirms the window by circular a few days ahead; 2026-11-08 ran
-# 13:45 to 14:45 IST (a Sunday).
+# The exchange fixes the window by circular; these are the published times, not
+# a guess, because every consumer treats this as the day's real session.
+#
+# 2026-11-08 (Sunday), Diwali Muhurat: NSE equity traded 14:20 to 15:30 IST per
+# NSE/CMTR/76941, 19 October 2026 (BSE notice 20261019-9 and MCX circular
+# MCX/TRD/590/2026 of the same date carry the same window; F&O ran to 15:40 per
+# NSE/FAOP/76940, and scrips in the Closing Auction Session closed at 15:15).
+# A pre-open call auction ran 14:05 to 14:15 and, like the ordinary one, is not
+# part of the bar grid. This is the equity cash window: 14:20 to 15:30.
 MUHURAT = {
-    "2026-11-08": (datetime.time(13, 45), datetime.time(14, 45)),
+    "2026-11-08": (datetime.time(14, 20), datetime.time(15, 30)),
 }
 
 

@@ -45,10 +45,21 @@ class Calendar(unittest.TestCase):
 
     def test_muhurat_is_a_session_on_a_day_that_is_not_a_trading_day(self):
         # 2026-11-08 was a Sunday AND a listed holiday, and still traded for an hour.
+        # The window is the published one, NSE/CMTR/76941 of 19 October 2026: 14:20
+        # to 15:30, which is 70 minutes and so 14 five-minute bars, not 75.
         self.assertFalse(cal.is_trading_day("2026-11-08"))
         self.assertEqual(cal.session("2026-11-08"),
-                         (datetime.time(13, 45), datetime.time(14, 45)))
-        self.assertEqual(len(cal.bar_slots("2026-11-08")), 12)
+                         (datetime.time(14, 20), datetime.time(15, 30)))
+        self.assertEqual(len(cal.bar_slots("2026-11-08")), 14)
+
+    def test_the_muhurat_window_ends_at_the_ordinary_close(self):
+        # Worth pinning on its own: the session is short at the FRONT, not the back,
+        # so anything keyed off the close (the square-off, the last bar) lands where
+        # it does on a normal day. An evening window would move both.
+        self.assertEqual(cal.session("2026-11-08")[1], cal.SESSION_CLOSE)
+        self.assertEqual(cal.bar_slots("2026-11-08")[-1], datetime.time(15, 25))
+        self.assertIsNone(cal.slot_of(cal.parse_ist("2026-11-08 14:15")))
+        self.assertEqual(cal.slot_of(cal.parse_ist("2026-11-08 14:20")), 0)
 
     def test_a_date_past_the_table_is_refused_not_guessed(self):
         # The regression this exists for: 2027-03-02 is a Tuesday, so weekday-plus-table

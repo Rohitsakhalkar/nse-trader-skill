@@ -1,3 +1,4 @@
+import datetime
 import io
 import json
 import os
@@ -84,12 +85,31 @@ class Store(unittest.TestCase):
         self.assertNotIn("RING", out)
         self.assertIn("not a session", err)
 
-    def test_the_square_off_moves_inside_a_muhurat_window(self):
-        # 2026-11-08: the market is shut for Diwali but trades 13:45 to 14:45.
+    def test_the_square_off_sits_inside_the_muhurat_window(self):
+        # 2026-11-08: the market is shut for Diwali but trades 14:20 to 15:30, the
+        # published window. It ends at the ordinary close, so the default 15:15 is
+        # already fifteen minutes inside it and must NOT move. The window this repo
+        # carried before (13:45 to 14:45) rang here at 14:30 instead, which is ten
+        # minutes after the real open and an hour before the real flatten.
         self.run_it(["add", "--at", "15:15", "--square-off", "--label", "square off"])
         _rc, out, _e = self.run_it(["check", "--no-fetch", "--now", "2026-11-08 14:31"])
-        self.assertIn("RING", out)          # 14:30, fifteen minutes before 14:45
-        self.assertIn("14:30", out)
+        self.assertNotIn("RING", out)
+        _rc, out, _e = self.run_it(["check", "--no-fetch", "--now", "2026-11-08 15:16"])
+        self.assertIn("RING", out)
+        self.assertIn("15:15", out)
+
+    def test_the_square_off_shortens_for_a_window_that_ends_early(self):
+        # The shortening branch is inert for the 2026 window, so pin it against a
+        # synthetic evening session: past Muhurat sessions ran 18:00 to 19:15 and a
+        # future one may again. Without this the branch would rot untested.
+        cal = alerts.nsecal
+        cal.MUHURAT["2026-12-20"] = (datetime.time(18, 0), datetime.time(19, 15))
+        try:
+            self.assertEqual(
+                alerts.square_off_time(datetime.date(2026, 12, 20), datetime.time(15, 15)),
+                datetime.time(19, 0))
+        finally:
+            del cal.MUHURAT["2026-12-20"]
 
     def test_clear_fired_keeps_the_armed_ones(self):
         self.run_it(["add", "--symbol", "A", "--above", "10"])
