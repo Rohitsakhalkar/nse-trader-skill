@@ -26,7 +26,7 @@ cd nse-trader-skill
 python3 -m unittest discover -s tests
 ```
 
-166 tests, about a third of a second, no network. Every test runs against
+172 tests, about a third of a second, no network. Every test runs against
 captured fixtures in `tests/fixtures/`, so the suite works on a plane and gives
 the same answer every time.
 

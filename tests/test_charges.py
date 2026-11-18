@@ -17,6 +17,25 @@ class Legs(unittest.TestCase):
         self.assertEqual(sell["stamp"], Decimal("0.00"))
         self.assertNotEqual(buy["total"], sell["total"])
 
+    def test_the_exchange_bill_matches_the_circular_per_crore(self):
+        """NSE/FA/73061 (27 Feb 2026, from 1 Mar 2026) moved the April-2023 IPFT
+        top-up into the transaction charge without changing what a member pays.
+        txn and ipft are therefore one bill in two lines, and the test that catches
+        a half-applied revision is the TOTAL, in rupees per crore of turnover:
+        307 for cash, 183 for futures, 3553 for a crore of options premium.
+        Raising txn to 0.00307 while leaving ipft at 0.0001 double-counts 10 per
+        crore and passes every other test in this file.
+        """
+        for product, per_crore in (("equity_intraday", "307"), ("equity_delivery", "307"),
+                                   ("futures", "183"), ("options", "3553")):
+            rates = ch.load_rates(None, product)
+            for side in ("buy", "sell"):
+                bill = (Decimal(rates["txn"][side]) + Decimal(rates["ipft"][side]))
+                self.assertEqual(bill * Decimal("10000000") / Decimal("100"),
+                                 Decimal(per_crore),
+                                 "%s %s leg is not %s rupees per crore"
+                                 % (product, side, per_crore))
+
     def test_delivery_pays_more_stt_and_a_dp_charge(self):
         intra = ch.leg_cost("sell", 100, 1324.40, "equity_intraday")
         deliv = ch.leg_cost("sell", 100, 1324.40, "equity_delivery")

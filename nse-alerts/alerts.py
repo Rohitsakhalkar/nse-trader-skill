@@ -19,7 +19,8 @@ market pays.
 Time alerts are calendar aware. 15:15 on a Sunday or on Diwali-Balipratipada is
 not a square-off, and an alert that fires on a day the market never opened is
 worse than no alert: it teaches you to ignore it. A Muhurat session has its own
-short window, so the square-off is pinned to that window's end instead.
+window, and a square-off that would fall outside it is pinned to fifteen minutes
+before that window's close instead.
 
 Price alerts need a live price, and that is the honest limit here. Yahoo's chart
 endpoint is the only free intraday source for NSE and it throttles by IP hard,
@@ -169,16 +170,23 @@ def live_prices(symbols, cache_dir, offline=None, pause=1.0, sanyam=None):
 # ---------------------------------------------------------------- commands
 
 def square_off_time(day, default):
-    """The IST time to flatten by. A Muhurat window ends early, so the square-off
-    moves with it rather than sitting past the close."""
+    """The IST time to flatten by, which must land inside the day's own session.
+
+    The test is "is the default inside this window?", not "does this window end
+    early?". A Muhurat session can be short at either end: 2026-11-08 ran 14:20 to
+    15:30, so the usual 15:15 already sits fifteen minutes inside it and is left
+    alone, while an evening window (18:00 to 19:15, as past Muhurat sessions ran)
+    opens AFTER 15:15 and would otherwise make the alert due the moment the market
+    opened. Either way the fallback is fifteen minutes before that window's close.
+    """
     s = nsecal.session(day)
     if not s:
         return None
     open_t, close_t = s
-    if close_t < default:                     # a short special session
-        base = datetime.datetime.combine(day, close_t) - datetime.timedelta(minutes=15)
-        return base.time()
-    return default
+    if open_t <= default < close_t:
+        return default
+    base = datetime.datetime.combine(day, close_t) - datetime.timedelta(minutes=15)
+    return base.time()
 
 
 def cmd_add(a):

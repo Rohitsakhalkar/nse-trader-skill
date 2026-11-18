@@ -99,7 +99,8 @@ themselves at about 15:20 at market.
 
 **The calendar.** The exchange's own holiday list, including the case the US
 has no shape for: Diwali Muhurat trading, an hour-long session on a day the
-market is otherwise shut, which in 2026 fell on a Sunday. The table is dated
+market is otherwise shut, which in 2026 fell on a Sunday and ran 14:20 to 15:30
+per the exchange's circular. Windows are cited, not guessed. The table is dated
 and ends where NSE's published list ends; past that, dates are reported unknown
 rather than guessed.
 
